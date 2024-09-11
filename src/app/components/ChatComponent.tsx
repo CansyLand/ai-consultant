@@ -3,14 +3,21 @@
 import React, { useState } from 'react';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 
-export default function ChatComponent() {
+interface ChatComponentProps {
+  graphJson: string;
+  onChatResponse: (response: string) => void;
+}
+
+export default function ChatComponent({ graphJson, onChatResponse }: ChatComponentProps) {
+  console.log(graphJson);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const systemMessage: ChatCompletionMessageParam = { role: 'system', content: graphJson };
     const userMessage: ChatCompletionMessageParam = { role: 'user', content: input };
-    const newMessages = [...messages, userMessage];
+    const newMessages = [...messages, systemMessage, userMessage];
     
     setMessages(newMessages);
     setInput('');
@@ -29,7 +36,9 @@ export default function ChatComponent() {
       }
 
       const data = await response.json();
+      const aiResponse = data.result.content;
       setMessages([...newMessages, data.result]);
+      onChatResponse(aiResponse); // Call this to update the parent state
     } catch (error) {
       console.error('Error:', error);
     }

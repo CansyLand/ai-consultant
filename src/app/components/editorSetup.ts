@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { NodeEditor, GetSchemes, ClassicPreset } from "rete";
+import { NodeEditor as ReteEditor, GetSchemes, ClassicPreset } from "rete";
 import { AreaPlugin, AreaExtensions } from "rete-area-plugin";
 import {
   ConnectionPlugin,
@@ -14,8 +14,9 @@ type Schemes = GetSchemes<
 type AreaExtra = ReactArea2D<Schemes>;
 
 export async function createEditor(container: HTMLElement) {
-  const socket = new ClassicPreset.Socket("socket");
-  const editor = new NodeEditor<Schemes>();
+  console.log('Creating editor');
+
+  const editor = new ReteEditor<Schemes>();
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const render = new ReactPlugin<Schemes, AreaExtra>({ createRoot });
@@ -33,6 +34,8 @@ export async function createEditor(container: HTMLElement) {
 
   AreaExtensions.simpleNodesOrder(area);
 
+  const socket = new ClassicPreset.Socket("socket");
+
   const a = new ClassicPreset.Node("A");
   a.addControl("a", new ClassicPreset.InputControl("text", { initial: "a" }));
   a.addOutput("a", new ClassicPreset.Output(socket));
@@ -43,18 +46,31 @@ export async function createEditor(container: HTMLElement) {
   b.addInput("b", new ClassicPreset.Input(socket));
   await editor.addNode(b);
 
+  const c = new ClassicPreset.Node("C");
+  c.addControl("c", new ClassicPreset.InputControl("text", { initial: "c" }));
+  c.addOutput("c", new ClassicPreset.Output(socket));
+  await editor.addNode(c);
+
   await editor.addConnection(new ClassicPreset.Connection(a, "a", b, "b"));
+  await editor.addConnection(new ClassicPreset.Connection(c, "c", b, "b"));
 
-  await area.translate(a.id, { x: 0, y: 0 });
-  await area.translate(b.id, { x: 270, y: 0 });
+  // Adjust these values as needed
+  await area.translate(a.id, { x: 50, y: 50 });
+  await area.translate(b.id, { x: 320, y: 50 });
+  await area.translate(c.id, { x: 50, y: 200 }); // Position C beneath A
 
-  setTimeout(() => {
-    // wait until nodes rendered because they dont have predefined width and height
-    AreaExtensions.zoomAt(area, editor.getNodes());
-  }, 10);
+  // Ensure the area is properly arranged
+  AreaExtensions.zoomAt(area, editor.getNodes());
+
+  console.log('Number of nodes:', editor.getNodes().length);
 
   return {
-    destroy: () => area.destroy(),
-    zoomToFit: () => AreaExtensions.zoomAt(area, editor.getNodes())
+    editor,
+    destroy: () => {
+      // Cleanup logic here
+    },
+    zoomToFit: async () => {
+      // Zoom logic here
+    }
   };
 }
