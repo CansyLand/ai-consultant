@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createEditor } from './editorSetup';
 import { NodeEditor as ReteEditor, GetSchemes, ClassicPreset } from 'rete';
 
+const socket = new ClassicPreset.Socket('default');
+
 type Schemes = GetSchemes<ClassicPreset.Node, ClassicPreset.Connection<ClassicPreset.Node, ClassicPreset.Node>>;
 
 export interface NodeEditorProps {
@@ -47,8 +49,11 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ onGraphUpdate, chatResponse }) 
   const addNodeIfMentioned = useCallback((response: string) => {
     console.log('addNodeIfMentioned called with:', response);
     if (response.toLowerCase().includes('node') && editorRef.current) {
-      const newNode = new ClassicPreset.Node('New Node');
-      newNode.addControl('title', new ClassicPreset.InputControl('text', { initial: 'New Node' }));
+      // Node is created here
+      const newNode = new ClassicPreset.Node('New Node Title');
+      newNode.addControl('title', new ClassicPreset.InputControl('text', { initial: 'New Nodeeee' }));
+      newNode.addOutput("a", new ClassicPreset.Output(socket));
+      newNode.addInput("b", new ClassicPreset.Input(socket));
       
       editorRef.current.addNode(newNode);
       
