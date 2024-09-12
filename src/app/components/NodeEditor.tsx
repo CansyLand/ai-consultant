@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createEditor } from './editorSetup';
 import { NodeEditor as ReteEditor, GetSchemes, ClassicPreset } from 'rete';
+import { parseAIResponse } from '../utils/nodeCommandParser';
 
 const socket = new ClassicPreset.Socket('default');
 
@@ -62,15 +63,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ onGraphUpdate, chatResponse }) 
     }
   }, []);
 
-  useEffect(() => {
-    console.log('chatResponse changed:', chatResponse);
-    if (chatResponse && chatResponse !== lastProcessedResponse && editorRef.current) {
-      addNodeIfMentioned(chatResponse);
-      setLastProcessedResponse(chatResponse);
-    }
-  }, [chatResponse, lastProcessedResponse, addNodeIfMentioned]);
-
-  const exportAndLogNodes = () => {
+  const exportAndLogNodes = useCallback(() => {
     if (editorRef.current) {
       const nodes = editorRef.current.getNodes();
       const connections = editorRef.current.getConnections();
@@ -107,7 +100,21 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ onGraphUpdate, chatResponse }) 
       console.log('Exported Graph:', JSON.stringify(exportedData, null, 2));
       onGraphUpdate(JSON.stringify(exportedData));
     }
-  };
+  }, [onGraphUpdate]);
+
+  useEffect(() => {
+    console.log('chatResponse changed:', chatResponse);
+    if (chatResponse && chatResponse !== lastProcessedResponse && editorRef.current) {
+      const commands = parseAIResponse(chatResponse);
+      
+      commands.forEach(command => {
+        command.execute(editorRef.current!);
+      });
+      
+      exportAndLogNodes();
+      setLastProcessedResponse(chatResponse);
+    }
+  }, [chatResponse, lastProcessedResponse, exportAndLogNodes]);
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '600px' }} />

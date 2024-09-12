@@ -40,3 +40,32 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 https://platform.openai.com/docs/quickstart?language-preference=javascript
 https://retejs.org/docs/api/rete
+
+## AI-Driven Node Graph Generation
+
+This project implements an AI-driven node graph generation system using the Command pattern and Rete.js. Here's an overview of the flow:
+
+1. **AI Chat Interaction**: Users interact with an AI chat interface to describe desired changes to the node graph.
+
+2. **Command Generation**: The AI generates a JSON response containing commands (e.g., add or remove nodes).
+
+3. **Command Parsing**: The `parseAIResponse` function in `nodeCommandParser.ts` parses the AI's JSON response into `NodeCommand` objects.
+
+4. **Command Pattern**: We use the Command pattern to encapsulate node operations:
+   - `NodeCommand` interface defines the structure for commands.
+   - `AddNodeCommand` and `RemoveNodeCommand` implement specific node operations.
+
+5. **Command Execution**: The parsed commands are executed on the Rete.js node editor, updating the graph.
+
+6. **Undo/Redo Functionality**: The Command pattern allows for easy implementation of undo/redo operations.
+
+This architecture provides a flexible and extensible way to manage AI-driven changes to the node graph, with the potential for advanced features like operation history and batch processing.
+
+
+LLM Response:
+```json
+[
+  { "type": "add", "title": "New Node", "x": 100, "y": 100 },
+  { "type": "remove", "id": "node123" }
+]
+```
