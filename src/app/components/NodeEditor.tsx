@@ -117,7 +117,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ onGraphUpdate, chatResponse }) 
   }, [chatResponse, lastProcessedResponse, exportAndLogNodes]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '600px' }} />
+    <div ref={containerRef} style={{ width: '100%', height: '100vh' }} />
   );
 };
 
